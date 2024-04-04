@@ -1,5 +1,4 @@
 import pygame
-
 pygame.init()
 
 SCREEN_WIDTH = 1440
