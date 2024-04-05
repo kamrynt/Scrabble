@@ -1,19 +1,25 @@
 import pygame
+from pygame.locals import *
 pygame.init()
 
 SCREEN_WIDTH = 1440
 SCREEN_HEIGHT = 1020
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT)) #creates the screen 
-
-board = pygame.Rect((308, 82, 800, 800))
+pygame.display.set_caption('BisonProductions')
+board = ["-","-","-","-","-","-","-","-","-","-","-","-","-","-","-",
+         "-","-","-","-","-","-","-","-","-","-","-","-","-","-","-",
+         "-","-","-","-","-","-","-","-","-","-","-","-","-","-","-",]
+board_background = pygame.Rect((308, 82, 800, 800))
 settings_bar = pygame.Rect((100,150,104,730))
 letter_stand = pygame.Rect((353, 910, 744, 87))
 score_board = pygame.Rect((1132,24,290,93))
 buddy_background = pygame.Rect((1132,156,290,287))
 buddy = pygame.Rect((1168,211,218,190))
 scramble = pygame.Rect((283,941,51,51))
-player = pygame.Rect((403, 901, 80, 80))
+player = "X"
+score = 0
+gameRunning = True
 active_letter = None
 letters = []
 for i in range(7):
@@ -31,7 +37,7 @@ while run:
     
     screen.fill((255,255,255))
 
-    pygame.draw.rect(screen, (84, 52, 28), board)#draws on screen and the color
+    pygame.draw.rect(screen, (84, 52, 28), board_background)#draws on screen and the color
     pygame.draw.rect(screen,(84, 52, 28), letter_stand )
     pygame.draw.rect(screen, (187,58,58), settings_bar)
     pygame.draw.rect(screen, (187,58,58), score_board)
