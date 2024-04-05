@@ -1,1 +1,2 @@
 # Scrabble
+pip install pygame

@@ -1,5 +1,4 @@
 import pygame
-from pygame.locals import *
 pygame.init()
 
 SCREEN_WIDTH = 1440
@@ -7,9 +6,6 @@ SCREEN_HEIGHT = 1020
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT)) #creates the screen 
 pygame.display.set_caption('BisonProductions')
-board = ["-","-","-","-","-","-","-","-","-","-","-","-","-","-","-",
-         "-","-","-","-","-","-","-","-","-","-","-","-","-","-","-",
-         "-","-","-","-","-","-","-","-","-","-","-","-","-","-","-",]
 board_background = pygame.Rect((308, 82, 800, 800))
 settings_bar = pygame.Rect((100,150,104,730))
 letter_stand = pygame.Rect((353, 910, 744, 87))
