@@ -1,6 +1,12 @@
 import pygame
 pygame.init()
 
+tile_images = {
+    'A': pygame.image.load('images/A_tile.png'),
+    'B': pygame.image.load('images/B_tile.png'),
+    # Load other tile images...
+}
+
 SCREEN_WIDTH = 1440
 SCREEN_HEIGHT = 1020
 
@@ -33,10 +39,21 @@ for i in range(7):
     letter = pygame.Rect(x + first_letter * i, y, w, h)
     letters.append(letter)
 clicked = False
-bag = []
-a = 1
-b = 3
-c = 3
+
+letter_scores = {
+    'A': 1, 'B': 3, 'C': 3, 'D': 2, 'E': 1, 'F': 4, 'G': 2, 'H': 4, 'I': 1, 'J': 8,
+    'K': 5, 'L': 1, 'M': 3, 'N': 1, 'O': 1, 'P': 3, 'Q': 10, 'R': 1, 'S': 1, 'T': 1,
+    'U': 1, 'V': 4, 'W': 4, 'X': 8, 'Y': 4, 'Z': 10
+}
+
+def calculate_tile_score(letter_rect):
+    # Assuming the letter is represented as a single character string
+    letter = letter_rect.symbol # Change this line according to your implementation
+    return letter_scores.get(letter.upper(), 0)
+
+def update_player_score(score):
+    global player_score  # Assuming player_score is a global variable representing the player's score
+    player_score += score
 
 def adjacent_spaces(space_rect):
     adjacent = []
@@ -47,6 +64,17 @@ def adjacent_spaces(space_rect):
     return adjacent
 
 initial_tile_positions = [letter.topleft for letter in letters]
+
+# Define bonus tile positions and their corresponding multipliers
+bonus_tiles = {
+    (3, 0): 'TW',  # Triple Word Score
+    (0, 0): 'TW',
+    (7, 0): 'TW',
+    (0, 3): 'TW',
+    (14, 0): 'TW',
+    (11, 0): 'TW',
+    (3, 3): 'DW',  # Double Word Score
+}
 
 def is_valid_move(space_rect):
     # Check if the space is empty
@@ -70,10 +98,44 @@ def move_tile(active_letter, space_rect):
     new_letter = pygame.Rect(390 + 100 * (len(letters) + 1), 901, 20, 20)
     letters.append(new_letter)
 
+def apply_bonus(tile, space_rect):
+    x = space_rect.left
+    y = space_rect.top
+    for position, bonus in bonus_tiles.items():
+        if position == (x, y):
+            if bonus == 'TW':
+                return tile * 3  # Triple Word Score
+            elif bonus == 'DW':
+                return tile * 2  # Double Word Score
+    return tile
+
+def move_tile(active_letter, space_rect):
+    # Move the tile to the board position
+    letter = letters.pop(active_letter)
+    letter.topleft = space_rect.topleft
+    occupied_spaces.append(space_rect)
+    # Apply bonus if applicable
+    tile_score = calculate_tile_score(letter)  # Implement this function based on your scoring system
+    tile_score = apply_bonus(tile_score, space_rect)
+    update_player_score(tile_score)  # Implement this function to update the player's score
+    # Replenish the rack with a new tile
+    new_letter = pygame.Rect(390 + 100 * (len(letters) + 1), 901, 20, 20)
+    letters.append(new_letter)
+
 run = True
 while run:
     
     screen.fill((255,255,255))
+
+     # Draw game elements
+    for i, letter in enumerate(letters):
+        # Assuming letters contain letter symbols ('A', 'B', etc.)
+        tile_image = tile_images.get(letter.symbol, None)
+        if tile_image:
+            screen.blit(tile_image, (390 + 100 * i, 901))  # Draw tile image at appropriate position
+        else:
+            # Draw a placeholder rectangle if no tile image is found
+            pygame.draw.rect(screen, (242, 242, 242), letter)
 
     pygame.draw.rect(screen, (84, 52, 28), board_background)#draws on screen and the color
     pygame.draw.rect(screen,(84, 52, 28), letter_stand )
