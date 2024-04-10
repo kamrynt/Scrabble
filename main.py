@@ -1,11 +1,11 @@
 import pygame
 pygame.init()
 
-tile_images = {
-    'A': pygame.image.load('images/A_tile.png'),
-    'B': pygame.image.load('images/B_tile.png'),
-    # Load other tile images...
-}
+# Define a custom class to represent each letter tile
+class LetterTile:
+    def __init__(self, letter, rect):
+        self.letter = letter
+        self.rect = rect
 
 SCREEN_WIDTH = 1440
 SCREEN_HEIGHT = 1020
@@ -29,15 +29,19 @@ for i in range(15):
     for j in range(15):
         space = pygame.Rect(340 + 50 * i, 120 + 50 * j, 40, 40)
         spaces.append(space)
+
+ # Define the list of letter tiles       
 letters = []
-for i in range(7):
-    first_letter = 100
-    x = 390
-    y = 901 
-    w = 40
-    h = 40
-    letter = pygame.Rect(x + first_letter * i, y, w, h)
-    letters.append(letter)
+for i, letter in enumerate('ABCDEFGHIJKLMNOPQRSTUVWXYZ'):
+    rect = pygame.Rect(390 + 100 * i, 901, 40, 40)  # Adjust size and position as needed
+    letters.append(LetterTile(letter, rect))
+#for i in range(7):
+#   x = 390
+ #   y = 901 
+  #  w = 40
+   # h = 40
+    #letter = pygame.Rect(x + first_letter * i, y, w, h)
+    #letters.append(letter)
 clicked = False
 
 letter_scores = {
@@ -63,7 +67,16 @@ def adjacent_spaces(space_rect):
             adjacent.append(adjacent_rect)
     return adjacent
 
-initial_tile_positions = [letter.topleft for letter in letters]
+# Store initial positions of letter tiles
+initial_tile_positions = [letter.rect.topleft for letter in letters]
+
+BONUS_TILE_WIDTH = 20
+BONUS_TILE_HEIGHT = 20
+
+# Load tile images for letters
+tile_images = {}
+for letter in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ':
+    tile_images[letter] = pygame.image.load(f'images/{letter}_tile.png')
 
 # Define bonus tile positions and their corresponding multipliers
 bonus_tiles = {
@@ -122,15 +135,45 @@ def move_tile(active_letter, space_rect):
     new_letter = pygame.Rect(390 + 100 * (len(letters) + 1), 901, 20, 20)
     letters.append(new_letter)
 
+# Load letter tile images
+letter_images = {}
+for letter in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ':
+    letter_images[letter] = pygame.image.load(f'images/{letter}_tile.png')
+
+# Load bonus tile images
+bonus_images = {
+    'TW': pygame.image.load('images/TW_tile.png'),
+    'DW': pygame.image.load('images/DW_tile.png'),
+    'TL': pygame.image.load('images/TL_tile.png'),
+    'DL': pygame.image.load('images/DL_tile.png'),
+}
+board_layout = [
+    ['TW', None, None, 'DL', None, None, None, 'TW', None, None, None, 'DL', None, None, 'TW'],
+]
+
 run = True
 while run:
     
     screen.fill((255,255,255))
 
      # Draw game elements
+
+    for row_index, row in enumerate(board_layout):
+        for col_index, bonus_type in enumerate(row):
+            if bonus_type:
+                # Calculate position based on bonus tile size
+                x = col_index * BONUS_TILE_WIDTH
+                y = row_index * BONUS_TILE_HEIGHT
+                bonus_image = bonus_images[bonus_type]
+                screen.blit(bonus_image, (x, y))
+    # Draw letter tiles, assuming letters is a list of Tile objects as defined previously
+    for tile in letters:
+        letter_image = letter_images[tile.letter]
+        screen.blit(letter_image, tile.rect.topleft)
+
     for i, letter in enumerate(letters):
         # Assuming letters contain letter symbols ('A', 'B', etc.)
-        tile_image = tile_images.get(letter.symbol, None)
+        tile_image = tile_images.get(letter.letter, None)
         if tile_image:
             screen.blit(tile_image, (390 + 100 * i, 901))  # Draw tile image at appropriate position
         else:
@@ -157,8 +200,8 @@ while run:
        
        if event.type == pygame.MOUSEBUTTONDOWN:
            if event.button == 1:
-               for num, letter in enumerate(letters):
-                   if letter.collidepoint(event.pos):
+               for num, letter_rect in enumerate(letters):
+                   if letter_rect.collidepoint(event.pos):
                        active_letter = num
        if event.type == pygame.MOUSEBUTTONUP:
            if event.button == 1:
