@@ -13,6 +13,11 @@ SCRAMBLE_COLOR = (5, 78, 131)
 TILE_COLOR = (242, 242, 242)
 BONUS_TILE_WIDTH = 20
 BONUS_TILE_HEIGHT = 20
+HIGHLIGHT_COLOR = (5, 78, 131)
+BOARD_TOP_LEFT_X = 800  # Adjust this value based on your board's position
+BOARD_TOP_LEFT_Y = 800  # Adjust this value based on your board's position
+SPACE_WIDTH = 20       # Adjust this to match the width of your board spaces
+SPACE_HEIGHT = 20      # Adjust this to match the height of your board spaces
 
 
 
@@ -46,6 +51,43 @@ board_layout = [
     [None, 'DW', None, None, None, 'TL', None, None, None, 'TL', None, None, None, 'DW', None],
     ['TW', None, None, 'DL', None, None, None, 'TW', None, None, None, 'DL', None, None, 'TW'],
 ]
+
+# 1 means normal score, 2 means double letter score, 3 means triple letter score, etc.
+multiplier_layout = [
+    [3, 1, 1, 2, 1, 1, 1, 3, 1, 1, 1, 2, 1, 1, 3],
+    [1, 2, 1, 1, 1, 3, 1, 1, 1, 3, 1, 1, 1, 2, 1],
+    [1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1],
+    [2, 1, 1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1, 1, 2],
+    [1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1],
+    [1, 3, 1, 1, 1, 3, 1, 1, 1, 3, 1, 1, 1, 3, 1],
+    [1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1],
+    [3, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 3],
+    [1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1],
+    [1, 3, 1, 1, 1, 3, 1, 1, 1, 3, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1],
+    [2, 1, 1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1, 1, 2],
+    [1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1],
+    [1, 2, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [3, 1, 1, 2, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 3],
+    # Continue filling out the matrix according to your board's layout
+]
+
+def get_multipliers(row, col):
+    tile_multiplier = 1
+    word_multiplier = 1
+
+    bonus_type = board_layout[row][col]
+    if bonus_type == "DL":
+        tile_multiplier = 2
+    elif bonus_type == "TL":
+        tile_multiplier = 3
+    elif bonus_type == "DW":
+        word_multiplier = 2
+    elif bonus_type == "TW":
+        word_multiplier = 3
+
+    return tile_multiplier, word_multiplier
+
 
 # Add any additional settings you have here
 letter_scores = {

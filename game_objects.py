@@ -3,8 +3,8 @@
 import pygame
 import os
 from resources import load_tile_images, load_bonus_tile_images
-from settings import bonus_tiles, board_layout
-from utils import calculate_tile_score, apply_bonus
+from settings import bonus_tiles, board_layout, get_multipliers, SPACE_WIDTH, SPACE_HEIGHT, BOARD_TOP_LEFT_X, BOARD_TOP_LEFT_Y
+from utils import calculate_tile_score, apply_bonus, calculate_word_score, get_word_tiles, update_player_score
 
 
 class LetterTile:
@@ -31,24 +31,34 @@ class Board:
         self.scramble = pygame.Rect((283,941,51,51))
         # Initialize other board-related attributes
         self.letters = []  # Assuming this is where you initialize LetterTiles
+        self.top_left_x = 800  # Example value, adjust as needed
+        self.top_left_y = 800  # Example value, adjust as needed
+        self.space_width = 20  # Example value, adjust as needed
+        self.space_height = 20  # Example value, adjust as needed
+        self.board_state = [[None for _ in range(15)] for _ in range(15)]
 
         for i in range(15):  # Assuming a 15x15 board
             for j in range(15):
                 space = pygame.Rect(340 + 50 * i, 120 + 50 * j, 40, 40)
                 self.spaces.append(space)
+
+    def place_tile(self, letter, row, col):
+        if 0 <= row < 15 and 0 <= col < 15:  # Ensure row and col are within bounds
+            self.board_state[row][col] = letter
+            return True
+        return False
      
 
 board = Board() 
     
     # Board-related methods...
 
+def initialize_game():
+    global letter_tiles  # Declare as global if you plan to modify it outside this function
+    letter_tiles = []
+    # Further initialization logic, such as adding LetterTile instances to letter_tiles
 
 
-
-
-def update_player_score(score):
-    global player_score  # Assuming player_score is a global variable representing the player's score
-    player_score += score
 
 def adjacent_spaces(space_rect):
     adjacent = []
@@ -58,30 +68,50 @@ def adjacent_spaces(space_rect):
             adjacent.append(adjacent_rect)
     return adjacent
 
-def is_valid_move(space_rect):
-    # Check if the space is empty
-    if space_rect not in board.occupied_spaces:
-        # Check if the space is adjacent to an existing tile on the board
-        adjacent = False
-        for adjacent_space in adjacent_spaces(space_rect):
-            if adjacent_space in board.occupied_spaces:
-                adjacent = True
-                break
-        if adjacent:
-            return True
+def is_valid_move(row, col):
+    # Example condition to check if a space is occupied
+    if board.board_state[row][col] is None:
+        # Further checks for adjacency or other game rules can be added here
+        return True
     return False
 
 
 
-def move_tile(active_letter, space_rect):
-    # Move the tile to the board position
-    letter = board.letters.pop(active_letter)
-    letter.topleft = space_rect.topleft
-    board.occupied_spaces.append(space_rect)
-    # Apply bonus if applicable
-    tile_score = calculate_tile_score(letter)  # Implement this function based on your scoring system
-    tile_score = apply_bonus(tile_score, space_rect)
-    update_player_score(tile_score)  # Implement this function to update the player's score
-    # Replenish the rack with a new tile
-    new_letter = pygame.Rect(390 + 100 * (len(board.letters) + 1), 901, 20, 20)
-    board.letters.append(new_letter)
+def move_tile(letter_tiles, active_letter, row, col, board):
+    if 0 <= active_letter < len(letter_tiles):
+        tile = letter_tiles[active_letter]
+        letter = tile.letter  # Get the letter directly from the tile object
+
+        # Calculate the position of the tile based on row and col
+        space_rect = pygame.Rect(col * SPACE_WIDTH + BOARD_TOP_LEFT_X, row * SPACE_HEIGHT + BOARD_TOP_LEFT_Y, SPACE_WIDTH, SPACE_HEIGHT)
+
+        # Get the multipliers for the tile's new position
+        tile_multiplier, word_multiplier = get_multipliers(row, col)
+
+        # Calculate the score for the individual tile
+        tile_score = calculate_tile_score(letter, tile_multiplier)
+
+        # Calculate the score for the entire word involving the new tile
+        word_tiles = get_word_tiles(row, col, board)  # Fetch all tiles forming the word
+        word_score = 0
+        for word_tile in word_tiles:
+            # Calculate score for each tile in the word
+            tile_multiplier, _ = get_multipliers(word_tile.row, word_tile.col)
+            word_score += calculate_tile_score(word_tile.letter, tile_multiplier)
+
+        # Apply word multiplier to the total word score
+        final_word_score = apply_bonus(word_score, word_multiplier, space_rect)
+
+        # Update the game state and player's score
+        update_player_score(final_word_score)  # Ensure this function updates global or player-specific score
+
+    else:
+        print("Error: Active letter index is out of range.")
+
+
+ 
+
+
+
+
+
