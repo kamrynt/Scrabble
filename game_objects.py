@@ -31,10 +31,10 @@ class Board:
         self.scramble = pygame.Rect((283,941,51,51))
         # Initialize other board-related attributes
         self.letters = []  # Assuming this is where you initialize LetterTiles
-        self.top_left_x = 800  # Example value, adjust as needed
-        self.top_left_y = 800  # Example value, adjust as needed
-        self.space_width = 20  # Example value, adjust as needed
-        self.space_height = 20  # Example value, adjust as needed
+        self.top_left_x = 800 
+        self.top_left_y = 800 
+        self.space_width = 20 
+        self.space_height = 20  
         self.board_state = [[None for _ in range(15)] for _ in range(15)]
 
         for i in range(15):  # Assuming a 15x15 board
