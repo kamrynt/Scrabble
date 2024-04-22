@@ -101,48 +101,38 @@ while run:
 
 
     for event in pygame.event.get():
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            for num, tile in enumerate(letter_tiles):
-                if tile.rect.collidepoint(event.pos):
-                    active_letter = num
-                    break  # Exit loop after finding the tile
-
-        elif event.type == pygame.MOUSEBUTTONUP and event.button == 1 and active_letter is not None:
-    # Reset this each time to ensure we're working with fresh data
-            space_rect = None  
-            for space in spaces:  # Assuming 'spaces' contains pygame.Rect objects for each board space
-                if space.collidepoint(event.pos):
-                    space_rect = space  # Now we have identified the correct space_rect
-                    break
-            
-            if space_rect is not None:
-                row = (space_rect.y - 120) // 50
-                col = (space_rect.x - 340) // 50
-                # Now we check if it's a valid move, and then attempt to move the tile
-                if is_valid_move(row,col):
-                    move_tile(letter_tiles, active_letter, row, col, board)
-                    active_letter = None
-                else:
-                    # Handle invalid move, perhaps resetting the tile's position
+        if event.type == pygame.QUIT:
+            run = False
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1:  # Left mouse button
+                for idx, tile in enumerate(letter_tiles):
+                    if tile.rect.collidepoint(event.pos):
+                        active_letter = idx
+                        offset_x = tile.rect.x - event.pos[0]
+                        offset_y = tile.rect.y - event.pos[1]
+                        break
+        elif event.type == pygame.MOUSEBUTTONUP:
+            if event.button == 1 and active_letter is not None:
+                placed = False
+                for space in spaces:
+                    if space.collidepoint(event.pos):
+                        # Calculate row and column from the space rectangle
+                        col = (space.x - board.top_left_x) // board.space_width
+                        row = (space.y - board.top_left_y) // board.space_height
+                        if is_valid_move(row, col, board):  # Pass row and col as integers
+                            move_tile(letter_tiles, active_letter, row, col, board)
+                            placed = True
+                            break
+                if not placed:
+                    # Return the tile to its original position
                     letter_tiles[active_letter].rect.topleft = initial_tile_positions[active_letter]
-                    active_letter = None
-            else:
-                # No space was found under the mouse; handle as needed, such as resetting the tile
-                if active_letter is not None:
-                    letter_tiles[active_letter].rect.topleft = initial_tile_positions[active_letter]
-                    active_letter = None
-
-
+                active_letter = None
         elif event.type == pygame.MOUSEMOTION and active_letter is not None:
-            # Move the active tile with the mouse cursor
-            letter_tiles[active_letter].rect.center = event.pos
-
-            # Determine which space is being hovered over and highlight it
-            hovered_space = None
-            for space in spaces:
-                if space.collidepoint(event.pos):
-                    hovered_space = space
-                    break
+            # Move the tile with the mouse
+            mouse_x, mouse_y = event.pos
+            letter_tiles[active_letter].rect.x = mouse_x + offset_x
+            letter_tiles[active_letter].rect.y = mouse_y + offset_y
+        pygame.display.update()
 
 
         if event.type == pygame.QUIT:
