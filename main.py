@@ -117,16 +117,22 @@ while run:
                 for space in spaces:
                     if space.collidepoint(event.pos):
                         # Calculate row and column from the space rectangle
-                        col = (space.x - board.top_left_x) // board.space_width
+                        col = (board.top_left_x - space.x ) // board.space_width
                         row = (space.y - board.top_left_y) // board.space_height
+                        print("boardx", board.top_left_x, "boardy", board.top_left_y)
+                        print("space x",space.x,"space y", space.y)
+                        print("row", row, "col", col)
                         if is_valid_move(row, col, board):  # Pass row and col as integers
                             move_tile(letter_tiles, active_letter, row, col, board)
                             placed = True
+                            print ("valid")
                             break
                 if not placed:
                     # Return the tile to its original position
                     letter_tiles[active_letter].rect.topleft = initial_tile_positions[active_letter]
-                active_letter = None
+                    active_letter = None
+                    print ("nah")
+
         elif event.type == pygame.MOUSEMOTION and active_letter is not None:
             # Move the tile with the mouse
             mouse_x, mouse_y = event.pos
