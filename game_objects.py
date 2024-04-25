@@ -3,22 +3,23 @@
 import pygame
 import os
 from resources import load_tile_images, load_bonus_tile_images
-from settings import bonus_tiles, board_layout, get_multipliers, SPACE_WIDTH, SPACE_HEIGHT, BOARD_TOP_LEFT_X, BOARD_TOP_LEFT_Y
+from settings import bonus_tiles, board_layout, get_multipliers, SPACE_WIDTH, SPACE_HEIGHT, BOARD_TOP_LEFT_X, BOARD_TOP_LEFT_Y,letter_scores
 from utils import calculate_tile_score, apply_bonus, calculate_word_score, get_word_tiles, update_player_score
 
 
 class LetterTile:
     def __init__(self, letter, rect, image=None):
+        from utils import calculate_tile_score
         self.letter = letter
         self.rect = rect
         self.image = pygame.image.load(os.path.join('images', f'{letter}_tile.png'))
-        
 
     def draw(self, surface):
         surface.blit(self.image, self.rect.topleft)
 
 class Board:
     def __init__(self):
+        self.current_score = 0
         self.active_letter = None
         self.occupied_spaces = []
         self.board_background = pygame.Rect(308, 82, 800, 800)
@@ -33,8 +34,8 @@ class Board:
         self.letters = []  # Assuming this is where you initialize LetterTiles
         self.top_left_x = 340
         self.top_left_y = 120 
-        self.space_width = 20 
-        self.space_height = 20  
+        self.space_width = 50 
+        self.space_height = 50  
         self.board_state = [[None for _ in range(15)] for _ in range(15)]
 
         for i in range(15):  # Assuming a 15x15 board
@@ -42,9 +43,9 @@ class Board:
                 space = pygame.Rect(340 + 50 * i, 120 + 50 * j, 40, 40)
                 self.spaces.append(space)
 
-    def place_tile(self, letter, row, col):
+    def place_tile(self, active_letter, row, col):
         if 0 <= row < 15 and 0 <= col < 15:  # Ensure row and col are within bounds
-            self.board_state[row][col] = letter
+            self.board_state[row][col] = active_letter
             return True
         return False
      
@@ -79,8 +80,10 @@ def is_valid_move(row, col, board):
 def update_score(board, row, col, letter):
     # Example: Simple scoring, adjust as needed for your game rules
     base_score = letter_scores[letter]
-    board.current_score += base_score
-    print(f"Score updated by {base_score}, total: {board.current_score}")
+    if hasattr(board, 'current_score'):
+        board.current_score += base_score
+    else:
+        board.current_score = base_score
 
 def check_game_end_conditions(board):
     # Example condition: Check if the board is full
@@ -118,6 +121,17 @@ def move_tile(letter_tiles, active_letter, row, col, board):
     else:
         print("Position out of board range.")
         return False
+    
+def get_placed_word(board):
+    # Assuming board.board_state is a list of lists where each tile can be None or an instance of LetterTile
+    word = ""
+    for row in board.board_state:
+        for tile in row:
+            if tile is not None:
+                word += tile.letter  # Assuming each tile has a 'letter' attribute
+    return word
+
+
 
 
  

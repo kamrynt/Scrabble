@@ -1,6 +1,6 @@
 import pygame
-from settings import SCREEN_WIDTH, SCREEN_HEIGHT, board_layout, HIGHLIGHT_COLOR, BOARD_TOP_LEFT_X, BOARD_TOP_LEFT_Y, SPACE_WIDTH, SPACE_HEIGHT
-from game_objects import LetterTile, Board, is_valid_move, move_tile
+from settings import SCREEN_WIDTH, SCREEN_HEIGHT, board_layout, HIGHLIGHT_COLOR, BOARD_TOP_LEFT_X, BOARD_TOP_LEFT_Y, SPACE_WIDTH, SPACE_HEIGHT,letter_scores,multiplier_layout
+from game_objects import LetterTile, Board, is_valid_move, move_tile, get_placed_word
 from utils import calculate_tile_score, calculate_word_score, get_random_letters, update_player_score
 from resources import load_tile_images, load_bonus_tile_images, letter_images
 
@@ -30,6 +30,7 @@ hovered_space = None
 active_letter = None
 occupied_spaces = []
 spaces = []
+word = []
 for i in range(15):
     for j in range(15):
         space = pygame.Rect(340 + 50 * i, 120 + 50 * j, 40, 40)
@@ -95,8 +96,9 @@ while run:
 
     # Draw letter tiles
     for tile in letter_tiles:
-        letter_image = letter_images[tile.letter]
-        screen.blit(letter_image, tile.rect.topleft)
+        screen.blit(tile.image, tile.rect)
+        #letter_image = letter_images[tile.letter]
+        #screen.blit(letter_image, tile.rect.topleft)
 
 
 
@@ -116,22 +118,34 @@ while run:
                 placed = False
                 for space in spaces:
                     if space.collidepoint(event.pos):
-                        # Calculate row and column from the space rectangle
-                        col = (board.top_left_x - space.x ) // board.space_width
+                        # Correct calculation of row and column
+                        col = (space.x - board.top_left_x) // board.space_width
                         row = (space.y - board.top_left_y) // board.space_height
-                        print("boardx", board.top_left_x, "boardy", board.top_left_y)
-                        print("space x",space.x,"space y", space.y)
-                        print("row", row, "col", col)
-                        if is_valid_move(row, col, board):  # Pass row and col as integers
-                            move_tile(letter_tiles, active_letter, row, col, board)
-                            placed = True
-                            print ("valid")
-                            break
+                        print("Board top left:", board.top_left_x, board.top_left_y)
+                        print("Space position:", space.x, space.y)
+                        print("Calculated row:", row, "Calculated col:", col)
+                        if is_valid_move(row, col, board):
+                            if board.place_tile(letter_tiles[active_letter], row, col):
+                                new_x = board.top_left_x + col * board.space_width
+                                new_y = board.top_left_y + row * board.space_height
+                                letter_tiles[active_letter].rect.topleft = (new_x, new_y)
+                                print("Resizing tile image to 20x20")
+                                letter_tiles[active_letter].rect.size = (40, 40)
+                                letter_tiles[active_letter].image = pygame.transform.scale(letter_tiles[active_letter].image, (40, 40))
+
+                                placed = True
+                                print("Valid move placed")
+
+                                word.append(letter_tiles[active_letter])
+                                break
                 if not placed:
                     # Return the tile to its original position
                     letter_tiles[active_letter].rect.topleft = initial_tile_positions[active_letter]
                     active_letter = None
-                    print ("nah")
+                    print("Invalid move, tile reset")
+
+                active_letter = None
+   
 
         elif event.type == pygame.MOUSEMOTION and active_letter is not None:
             # Move the tile with the mouse
@@ -140,7 +154,16 @@ while run:
             letter_tiles[active_letter].rect.y = mouse_y + offset_y
         pygame.display.update()
 
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1:
+                mouse_pos = event.pos
+                if board.scramble.collidepoint(mouse_pos):
+                    placed_word = get_placed_word(board)
 
+                    word_score = calculate_word_score(board)
+                    print(f"Word: {placed_word}, Score: {word_score}")
+                    
+                
         if event.type == pygame.QUIT:
             run = False
 

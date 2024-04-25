@@ -2,6 +2,8 @@
 
 # Assuming letter_scores are defined in settings.py or another appropriate placehi
 from settings import letter_scores, board_layout
+
+
 # Add any additional game object classes here
 import random
 
@@ -47,47 +49,73 @@ def get_multipliers(row, col):
 
 
 def get_word_tiles(row, col, board):
-    word_tiles = []
-    
-    # Horizontal tiles
-    # Start from the current tile and expand left and right
-    start = col
-    while start > 0 and board.board_state[row][start - 1] is not None:
-        start -= 1
-    end = col
-    while end < len(board.board_state[row]) - 1 and board.board_state[row][end + 1] is not None:
-        end += 1
-    
-    if end != start:  # Ensure there's actually a word here
-        word_tiles.extend([board.board_state[row][i] for i in range(start, end + 1)])
+    word_horizontal = ''
+    tiles_horizontal = []
 
-    # Vertical tiles
-    # Start from the current tile and expand up and down
-    start = row
-    while start > 0 and board.board_state[start - 1][col] is not None:
-        start -= 1
-    end = row
-    while end < len(board.board_state) - 1 and board.board_state[end + 1][col] is not None:
-        end += 1
-    
-    if end != start:  # Ensure there's actually a word here
-        word_tiles.extend([board.board_state[i][col] for i in range(start, end + 1)])
+    # Check horizontally for connected tiles
+    start_col = col
+    while start_col > 0 and board.board_state[row][start_col - 1] is not None:
+        start_col -= 1
+    end_col = col
+    while end_col < len(board.board_state[row]) - 1 and board.board_state[row][end_col + 1] is not None:
+        end_col += 1
 
-    return word_tiles
+    if end_col != start_col:
+        word_horizontal += ''.join(board.board_state[row][i].letter for i in range(start_col, end_col + 1))
+        tiles_horizontal.extend([(row, i) for i in range(start_col, end_col + 1)])
+
+    # Check vertically for connected tiles
+    word_vertical = ''
+    tiles_vertical = []
+    start_row = row
+    while start_row > 0 and board.board_state[start_row - 1][col] is not None:
+        start_row -= 1
+    end_row = row
+    while end_row < len(board.board_state) - 1 and board.board_state[end_row + 1][col] is not None:
+        end_row += 1
+
+    if end_row != start_row:
+        word_vertical += ''.join(board.board_state[i][col].letter for i in range(start_row, end_row + 1))
+        tiles_vertical.extend([(i, col) for i in range(start_row, end_row + 1)])
+
+    # Return results as a dictionary or two separate words and their tiles
+    return {
+        'horizontal': {'word': word_horizontal, 'tiles': tiles_horizontal},
+        'vertical': {'word': word_vertical, 'tiles': tiles_vertical}
+    }
 
 
 
 
-def calculate_word_score(row, col, board, word_multiplier):
-    # This should retrieve all tiles forming a word given the placement at row, col
-    word_tiles = get_word_tiles(row, col, board)  # Make sure this function returns a list of tiles
+def calculate_word_score(board):
+    total_score = 0
+    word_multiplier = 1  # Initialize with a default value that does not affect multiplication
 
-    word_score = 0
-    for tile in word_tiles:
-        tile_multiplier, _ = get_multipliers(tile.row, tile.col)
-        word_score += calculate_tile_score(tile.letter, tile_multiplier)
-    
-    return word_score * word_multiplier
+    # Example: Assuming you're calculating based on tiles already placed on the board
+    for row in range(len(board.board_state)):
+        for col in range(len(board.board_state[row])):
+            tile = board.board_state[row][col]
+            if tile is not None:  # Ensure there is a tile
+                letter = tile.letter
+                tile_multiplier, potential_word_multiplier = get_multipliers(row, col)
+                letter_score = letter_scores[letter] * tile_multiplier
+                total_score += letter_score
+                # Check if this tile's position affects the word multiplier
+                if potential_word_multiplier > word_multiplier:
+                    word_multiplier = potential_word_multiplier  # Update to the higher multiplier if applicable
+
+    # Apply the highest word multiplier found (if any) to the total score
+    total_score *= word_multiplier
+    return total_score
+
+
+def find_position_of_letter(board, letter):
+    # Implement a way to find the position of each letter, this is just a placeholder
+    for row in range(len(board.board_state)):
+        for col in range(len(board.board_state[row])):
+            if board.board_state[row][col] == letter:
+                return row, col
+    return None, None
 
 
 def apply_bonus(tile_score, word_multiplier, space_rect):
