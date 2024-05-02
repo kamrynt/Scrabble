@@ -1,5 +1,6 @@
 import pygame
-from settings import SCREEN_WIDTH, SCREEN_HEIGHT, board_layout, HIGHLIGHT_COLOR, BOARD_TOP_LEFT_X, BOARD_TOP_LEFT_Y, SPACE_WIDTH, SPACE_HEIGHT,letter_scores,multiplier_layout
+pygame.init()
+from settings import SCREEN_WIDTH, SCREEN_HEIGHT, board_layout, HIGHLIGHT_COLOR
 from game_objects import LetterTile, Board, is_valid_move, move_tile, get_placed_word
 from utils import calculate_tile_score, calculate_word_score, get_random_letters, update_player_score
 from resources import load_tile_images, load_bonus_tile_images, letter_images
@@ -19,12 +20,22 @@ for letter in get_random_letters():
 letters = get_random_letters()
 board = Board()
 
-
+def draw_button(screen, text_surface,text_rect, color):
+        pygame.draw.rect(screen,(5,78,131), board.scramble)
+        screen.blit(text_surface, text_rect)
 gameRunning = True
 clock = pygame.time.Clock()
 tile_images = load_tile_images()
 bonus_tile_images = load_bonus_tile_images()
 
+
+text_color = (255, 255, 255)  # White text
+hover_color = (255, 100, 100)  # Light red for hover effect
+
+font = pygame.font.Font(None, 20)
+text = "Done"
+text_surface = font.render(text, True, text_color)
+text_rect = text_surface.get_rect(center=board.scramble.center)
 
 hovered_space = None 
 active_letter = None
@@ -66,7 +77,9 @@ while run:
     pygame.draw.rect(screen, (187,58,58), board.score_board)
     pygame.draw.rect(screen,(5,78,131), board.buddy_background)
     pygame.draw.rect(screen,(242, 242, 242), board.buddy)
-    pygame.draw.rect(screen,(5,78,131), board.scramble)
+    draw_button(screen, text_surface, text_rect, board.scramble)
+    
+
     if hovered_space is not None:
         pygame.draw.rect(screen, HIGHLIGHT_COLOR, hovered_space, 5)  # Draws a highlight border; adjust thickness as needed
 
